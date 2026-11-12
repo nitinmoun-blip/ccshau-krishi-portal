@@ -147,33 +147,42 @@ export default function App() {
   );
 
   // Login and signup
-  async function handleAuth() {
-    if (!supabase) {
-      setMessage("Supabase configuration missing. Check Vercel environment variables.");
-      return;
-    }
-
-    if (!email || !password) {
-      setMessage("Please enter email and password.");
-      return;
-    }
-
-    setBusy(true);
-    setMessage("");
-
-    const result =
-      mode === "signup"
-        ? await supabase.auth.signUp({ email, password })
-        : await supabase.auth.signInWithPassword({ email, password });
-
-    setBusy(false);
-    setMessage(
-      result.error?.message ??
-      (mode === "signup"
-        ? "Account created. Check email verification if enabled."
-        : "Login successful.")
-    );
+  
+async function handleAuth() {
+  if (!supabase) {
+    setMessage("Supabase configuration missing.");
+    return;
   }
+
+  if (!email || !password) {
+    setMessage("Please enter email and password.");
+    return;
+  }
+
+  setBusy(true);
+  setMessage("");
+
+  const result =
+    mode === "signup"
+      ? await supabase.auth.signUp({ email, password })
+      : await supabase.auth.signInWithPassword({ email, password });
+
+  setBusy(false);
+
+  if (result.error) {
+    setMessage(result.error.message);
+    return;
+  }
+
+  if (mode === "login") {
+    setUser(result.data.user);
+    setPage("Home");
+    setMessage("Login successful.");
+  } else {
+    setMessage("Account created. Check email verification if enabled.");
+  }
+}
+  
 
   // Logout
   async function handleLogout() {
